@@ -48,4 +48,16 @@ class Weather {
     feelsLike: (json['main']['feels_like'] as num).toDouble(),
     );
   }
+
+ Map<String, dynamic> toJson() {
+    return {
+      'description': description,
+      'temperature': temperature,
+      'windSpeed': windSpeed,
+      'maxTemperature': maxTemperature,
+      'minTemperature': minTemperature,
+      'humidity': humidity,
+      'feelsLike': feelsLike,
+    };
+  }
 }
