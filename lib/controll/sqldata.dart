@@ -15,40 +15,38 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'weather.db');
     return await openDatabase(
-      path,
+      join(await getDatabasesPath(), 'weather.db'),
+      onCreate: (db, version) {
+        return db.execute(
+          "CREATE TABLE weather(city TEXT PRIMARY KEY, temperature TEXT, condition TEXT, date TEXT)",
+        );
+      },
       version: 1,
-      onCreate: _onCreate,
     );
   }
 
-  void _onCreate(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE weather (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        city TEXT,
-        temperature TEXT,
-        condition TEXT,
-        date TEXT
-      )
-    ''');
+  Future<List<Map<String, dynamic>>> getAllWeatherData() async {
+    final db = await database;
+    return await db.query('weather');
   }
 
   Future<void> insertWeather(String city, String temperature, String condition, String date) async {
     final db = await database;
-    await db.insert('weather', {
-      'city': city,
-      'temperature': temperature,
-      'condition': condition,
-      'date': date,
-    });
+    await db.insert(
+      'weather',
+      {'city': city, 'temperature': temperature, 'condition': condition, 'date': date},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<List<Map<String, dynamic>>> getWeather(String city) async {
     final db = await database;
-    return await db.query('weather', where: 'city = ?', whereArgs: [city]);
+    return await db.query(
+      'weather',
+      where: 'city = ?',
+      whereArgs: [city],
+    );
   }
 
   Future<void> deleteWeather(String city) async {
